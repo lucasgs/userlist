@@ -2,7 +2,7 @@ import { React, useEffect, useState } from "react";
 import "./styles.css"
 import { fetchUserData } from "./Api";
 
-const sortDirection = {
+const SortDirection = {
   DEFAULT: 0,
   ASC: 1,
   DESC: 2
@@ -26,8 +26,8 @@ export default function App() {
   const [state, setState] = useState({
     data: [],
     filteredData: [],
-    sortBy: "",
-    sortDirection: sortDirection.DEFAULT
+    sortBy: "name",
+    sortDirection: SortDirection.DEFAULT
   });
 
   useEffect(() => {
@@ -36,7 +36,6 @@ export default function App() {
       setState((s) => {
         return { ...s, data: data, filteredData: data };
       });
-      //logState();
     });
   }, []);
 
@@ -44,8 +43,7 @@ export default function App() {
     event.preventDefault();
     const columnName = event.target.innerText;
     const sortName = getSortBy(columnName);
-    const newSortDirection = getSortDirection();
-    console.log(newSortDirection);
+    const newSortDirection = getSortDirection(state.sortDirection);
     setState((s) => {
       return {
         ...s,
@@ -54,7 +52,7 @@ export default function App() {
       };
     });
 
-    const sortedData = sortData(sortName, newSortDirection);
+    const sortedData = sortData(newSortDirection);
     setState((s) => {
       return {
         ...s,
@@ -64,31 +62,24 @@ export default function App() {
     });
   };
 
-  const logState = () => console.log("State -> " + JSON.stringify(state));
+  const getSortDirection = (sortDirection) =>
+    sortDirection === SortDirection.ASC
+      ? SortDirection.DESC
+      : SortDirection.ASC;
 
-  const getSortDirection = () =>
-    state.sortDirection === sortDirection.ASC
-      ? sortDirection.DESC
-      : sortDirection.ASC;
-
-  const sortData = (sortBy, sortDirection) => {
-    const newData = state.filteredData.slice(0);
-    //logState();
+  const sortData = (sortDirection) => {
+    const newData = state.filteredData.slice();
     newData.sort((a, b) => {
-      const propA = a[sortBy];
-      const propB = b[sortBy];
-      if (
-        sortDirection === sortDirection.DEFAULT ||
-        sortDirection === sortDirection.ASC
-      ) {
-        if (propA < propB) return -1;
-        else if (propA > propB) return 1;
-        else return 0;
-      } else {
-        if (propA > propB) return -1;
-        else if (propA < propB) return 1;
-        else return 0;
-      }
+      const propA = a[state.sortBy];
+      const propB = b[state.sortBy];
+      var res;
+      if (propA > propB) res = 1;
+      else if (propA < propB) res = -1;
+      else res = 0;
+
+      return (
+        sortDirection === SortDirection.DESC
+      ) ? res * -1 : res;
     });
     return newData;
   };
